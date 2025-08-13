@@ -1,0 +1,4 @@
+rapid_api_key: ""
+sleep_on_errors: [5, 10]
+sleep_between_accs: [5, 10]
+request_retries: 3
