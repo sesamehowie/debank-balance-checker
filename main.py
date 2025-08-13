@@ -9,11 +9,22 @@ import traceback
 
 async def process_account(config, wallet, accumulation_list: list):
     try:
+        spl_symbol = ""
+        splitters = [",", ".", ":", "-", ";"]
+
+        for splitter in splitters:
+            if splitter in wallet:
+                spl_symbol = splitter
+                break
+
+        session_id, address = wallet.split(spl_symbol)
         client = AsyncReqClient(config=config)
-        result = await client.get_total_balance(account_address=wallet)
+        result = await client.get_total_balance(account_address=address)
         if not isinstance(result, list):
-            result = [wallet, "0.0000"]
-        accumulation_list.append(result)
+            res = [session_id, address, "0.0000"]
+        else:
+            res = [session_id, address, result[len(result) - 1]]
+        accumulation_list.append(res)
         await async_sleep(1, config)
     except Exception:
         logger.error(traceback.format_exc())
@@ -59,7 +70,8 @@ async def main():
         logger.info("Writing results...")
 
         file_manager = FileManager(
-            filename=config.RESULTS_FILE_PATH, csv_header=["account", "usd_value"]
+            filename=config.RESULTS_FILE_PATH,
+            csv_header=["session_id", "account", "usd_value"],
         )
 
         file_manager.open_file("w", results)

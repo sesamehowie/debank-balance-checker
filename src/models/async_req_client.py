@@ -30,12 +30,13 @@ class AsyncReqClient:
                     url, params=params, headers=self.headers
                 ) as response:
                     data = await response.json()
-                    break
+                    if data.get("chain_list"):
+                        break
             except Exception as e:
                 logger.warning(f"Attempt {i+1}/{self.retries}: Error: {str(e)}")
                 continue
 
-        if not data:
+        if not data or not data.get("chain_list"):
             return [account_address, "0"]
         else:
             res_sum = reduce(
