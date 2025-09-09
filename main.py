@@ -35,10 +35,6 @@ async def process_account(config, wallet, accumulation_list: list):
 
 
 async def main():
-    batch_size = 5
-    semaphore_limit = 5
-    batch_delay = 5
-
     config = Config()
     file_manager = FileManager(filename=config.WALLETS_FILE)
 
@@ -49,22 +45,9 @@ async def main():
 
     logger.debug(f"Loaded {wallets_amt} wallets")
 
-    while wallets:
-        current_batch = wallets[:batch_size]
-        logger.debug(f"Processing batch of {len(current_batch)} wallets")
-
-        async with asyncio.Semaphore(semaphore_limit):
-            tasks = [
-                asyncio.create_task(process_account(config, wallet, results))
-                for wallet in current_batch
-            ]
-            await asyncio.gather(*tasks, return_exceptions=True)
-
-        wallets = wallets[batch_size:]
-
-        if wallets:
-            logger.debug(f"Waiting {batch_delay} seconds before next batch")
-            await asyncio.sleep(batch_delay)
+    for wallet in wallets:
+        task = asyncio.create_task(process_account(config, wallet, results))
+        await task
 
     if results:
         logger.info("Writing results...")
