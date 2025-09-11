@@ -29,7 +29,7 @@ class AsyncReqClient:
                     url, params=params, headers=self.headers
                 ) as response:
                     data = await response.json()
-                    if data.get("chain_list"):
+                    if isinstance(data, dict):
                         break
             except Exception as e:
                 logger.warning(f"Attempt {i+1}/{self.retries}: Error: {str(e)}")
